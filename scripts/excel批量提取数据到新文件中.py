@@ -1,11 +1,11 @@
-# 该脚本可将EXCEL表中不同抗体的轻重链批量提取出来，并将每一个抗体序列导入到一个新的.yaml文件中，运行前可能需要`pip install pandas openpyxl`
+# 该脚本可将csv表中不同抗体的轻重链批量提取出来，并将每一个抗体序列导入到一个新的txt或任意格式的文本文件中，运行前可能需要`pip install pandas openpyxl`
 # 还需准备模板文件，模板文件中应含有占位符，用于批量替换
 
 import pandas as pd   
 import os
 
-# 1. 读取csv文件
-csv_path = 'sequence.csv'             # 替换为你的Excel文件路径
+# 1. 读取csv文件，如果为excel文件，则将csv替换为excel
+csv_path = 'sequence.csv'             # 替换为你的csv文件路径
 df = pd.read_csv(csv_path)
 
 # 如果CSV分隔符不是逗号，可选择性取消下列代码注释
