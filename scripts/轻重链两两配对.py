@@ -60,7 +60,7 @@ print(f"\n✓ 配对完成！")
 print(f"✓ 轻链: {len(light_seqs)} 条")
 print(f"✓ 重链: {len(heavy_seqs)} 条")
 print(f"✓ 总配对数: {len(pairs)} 对")
-print(f"✓ 输出文件: {os.path.abspath(OUTPUT_EXCEL)}")
+print(f"✓ 输出文件: {os.path.abspath(OUTPUT_CSV)}")
 
 # 显示前3行预览
 print(f"\n前3行预览:")
