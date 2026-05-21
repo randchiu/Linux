@@ -4,12 +4,18 @@
 import pandas as pd   
 import os
 
-# 1. 读取Excel文件
-excel_path = 'xulie.xlsx'             # 替换为你的Excel文件路径
-df = pd.read_excel(excel_path)
+# 1. 读取csv文件
+csv_path = 'sequence.csv'             # 替换为你的Excel文件路径
+df = pd.read_csv(csv_path)
+
+# 如果CSV分隔符不是逗号，可选择性取消下列代码注释
+# 制表符分隔（常见）
+# df = pd.read_csv(csv_path, sep='\t')
+# 分号分隔
+# df = pd.read_csv(csv_path, sep=';')
 
 # 2. 指定txt模板文件路径（包含占位符的文件）
-template_path = 'temp.yaml'           # 替换为你的模板文件路径
+template_path = 'tempplate.yaml'           # 替换为你的模板文件路径
 output_folder = 'output_files'        # 输出文件夹路径
 
 # 3. 创建输出文件夹（如果不存在）
