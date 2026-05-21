@@ -3,7 +3,7 @@ import os
 
 # ========== 配置区域 ==========
 INPUT_EXCEL = 'protein_sequences.xlsx'   # 输入Excel文件路径
-OUTPUT_EXCEL = 'paired_sequences.xlsx'   # 输出文件路径
+OUTPUT_CSV = 'paired_sequences.csv'   # 输出文件路径，输出为csv格式文件
 
 # Sheet名称
 LIGHT_SHEET = '轻链'      # 轻链所在sheet名
@@ -44,17 +44,17 @@ pair_num = 1
 for i, (l_seq, l_id) in enumerate(zip(light_seqs, light_ids)):
     for j, (h_seq, h_id) in enumerate(zip(heavy_seqs, heavy_ids)):
         pairs.append({
-            '配对编号': f'Pair_{pair_num:04d}',
-            '轻链ID': l_id,
-            '轻链序列': l_seq,
-            '重链ID': h_id,
-            '重链序列': h_seq
+            'pair_id': f'Pair_{pair_num:04d}',
+            'light_id': l_id,
+            'light_chain': l_seq,
+            'heavy_id': h_id,
+            'heavy_chain': h_seq
         })
         pair_num += 1
 
 # ========== 保存结果 ==========
 df_result = pd.DataFrame(pairs)
-df_result.to_excel(OUTPUT_EXCEL, index=False, engine='openpyxl')
+df_result.to_csv(OUTPUT_CSV, index=False, encoding='utf-8-sig')
 
 print(f"\n✓ 配对完成！")
 print(f"✓ 轻链: {len(light_seqs)} 条")
