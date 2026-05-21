@@ -12,7 +12,7 @@ nvidia-smi                      # check nvidia driver and cuda
 # 安装NVIDIA驱动
 
 # 安装CUDA
-1. 在安装nvidia驱动后，输入'nvidia-smi'确定与驱动相适应的CUDA版本，百度搜索相应版本并按照官网提示进行安装。（推荐使用deb(network)，WSL子系统也同样适用）
+1. 在安装nvidia驱动后，输入'nvidia-smi'确定驱动最高支持的CUDA版本，百度搜索相应版本并按照官网提示进行安装，可安装低于支持的最高版本。（推荐使用deb(network)，WSL子系统也同样适用）
 2. 安装后输入以下命令将cuda添加到环境变量,里面的版本号根据安装的版本进行相应更改
 ```
 echo -e "export PATH=/usr/local/cuda-12.4/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64:\$LD_LIBRARY_PATH" >> ~/.bashrc
