@@ -1,4 +1,4 @@
-# 安装依赖包
+# 安装依赖包 <font size="1">
 ```
 sudo apt update
 sudo apt install -y gcc g++ gfortran build-essential libhdf5-dev libgmp-dev
@@ -29,9 +29,9 @@ export INCLUDE=usr/include/hdf5/serial:$INCLUDE
 ```
 ./scons.py -j$(nproc) mode=release bin
 ```
-- -j$(nproc)：使用所有 CPU 核心并行编译
-- mode=release：生成优化版本（速度快，适合生产运行）
-- bin：编译所有可执行文件（包括 rosetta_scripts、relax、mpi_msd 等）
+> - -j$(nproc)：使用所有 CPU 核心并行编译
+>- mode=release：生成优化版本（速度快，适合生产运行）
+>- bin：编译所有可执行文件（包括 rosetta_scripts、relax、mpi_msd 等）
 
 # 貌似下载linux版本可以不用编译
 下载后加载环境变量(好像不是)
