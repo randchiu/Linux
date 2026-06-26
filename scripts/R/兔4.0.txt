@@ -1,0 +1,188 @@
+setwd("D:/Desktop")#设置工作目录，设置为测序文件所在文件夹,支持中文路径，需要将所有\符号换成/符号
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+if (!requireNamespace("stringr", quietly = TRUE))
+  BiocManager::install("stringr",update = TRUE,ask=F)
+if (!requireNamespace("Biostrings", quietly = TRUE))
+  BiocManager::install("Biostrings",update = TRUE,ask=F)
+if (!requireNamespace("seqinr", quietly = TRUE))
+  BiocManager::install("seqinr",update = TRUE,ask=F)
+
+
+library(Biostrings)
+library(stringr)
+
+#获取文件
+file<-list.files()
+seq.file<-file[grep('seq$',file)]#获得seq结尾文件
+rj<-read.csv2('reference_r_J.csv',header = T,sep = ",")#获得J区参考文件
+
+##循环比对
+fasta<-rj[1,4:7]
+fasta<-fasta[-1,]
+colnames(fasta)<-c('ID','sequence','type','DNA')
+
+for (i in 1:length(seq.file)) {
+  #将基因序列（ATGC）赋值给变量
+  seq<-read.table(seq.file[i],header = F)
+  if(nrow(seq)==2){
+    dna<-as.character(seq[2,])
+  }
+  else if(nrow(seq)==1){
+    dna<-as.character(seq)
+  }
+  
+  if(nrow(seq)>2){
+    a<-seq[1,]
+    for (e in 2:nrow(seq)) {
+      a<-paste(a,seq[e,])
+    }
+    dna<-gsub(" ", "", a)}
+  
+  
+  if (grepl("AAGCTTGCCACC",dna)){
+    n1<-nchar(str_split_fixed(dna,'AAGCTTGCCACC',n=2)[,1])
+    dna<-substring(dna,n1,nchar(dna))
+    rm(n1)
+  }
+  
+  #以选定片段为标准筛选，如果不用筛选可以直接把37-55行去除
+  if (grepl("ACGGCCACC",dna)){
+    if (grepl("TAAGAATTC",dna)){
+      n1<-nchar(str_split_fixed(dna,'ACGGCCACC',n=2)[,1])
+      n2<-nchar(str_split_fixed(dna,'TAAGAATTC',n=2)[,1])
+    }}
+  
+  if (grepl("ACGGCCACC",dna)){
+    if (grepl("CCCTCCACC",dna)){
+      n1<-nchar(str_split_fixed(dna,'ACGGCCACC',n=2)[,1])
+      n2<-nchar(str_split_fixed(dna,'CCCTCCACC',n=2)[,1])
+    }}
+  if(exists("n1")&exists("n2")){
+    if (n1<n2){
+      dna<-substring(dna,n1,n2)
+    }else{
+      dna<-substring(dna,n2,n1)
+    }}
+  rm(n1)
+  rm(n2)
+  
+  if (grepl("AAGCTTGCCACCATGAGAGTGCTGATTCTTTTGTGCCTGTTCAC|AAGCTTGCCACCACTAGTCCAGTGTGGTGGTATTCTGCAGATATCCAGCACAGTGTTCGAA",dna)){
+    n<-nchar(str_split_fixed(dna,'AAGCTTGCCACCATGAGAGTGCTGATTCTTTTGTGCCTGTTCAC|AAGCTTGCCACCACTAGTCCAGTGTGGTGGTATTCTGCAGATATCCAGCACAGTGTTCGAA',n=2)[,1])
+    dna1<-substring(dna,n+1,n+423)
+    dna1<-DNAString(dna1)
+    aa<-translate(dna1)
+    cat(seq.file[i],'\t出现载体序列','\n')
+    r<-fasta[1,]
+    r<-r[-1,]
+    r[1,1]<-seq.file[i]
+    r[1,2]<-as.character(aa)
+    r[1,4]<-as.character(dna1)
+    r[1,3]<-'ZT'
+    fasta<-rbind(fasta,r)
+    next
+  }
+  
+  ##从不同位置正反向开始翻译为氨基酸序列
+  for (t in 1:3) {
+    aa<-paste('aaseq',t,sep = "")
+    dna_seq<-DNAString(substr(dna, t, nchar(dna)))
+    assign(aa,  translate(dna_seq))
+    aa_re<-paste('aaseq_re',t,sep = "")
+    dnare_seq<-substr(reverseComplement(DNAString(dna)),t,nchar(dna))
+    assign(aa_re,translate(dnare_seq))
+    
+    #与J区参考序列开始比对，允许1位氨基酸错配，比对成功输出结果
+    for (x in 1:nrow(rj)) {
+      sj<-rj[x,7]
+      output_j<-matchPattern(sj,get(aa),max.mismatch=1,with.indels=T)
+      ##max.mismatch=1参数控制错配数目多少，可以调整为2，数值越高结果越多与模板差异越大
+      
+      if(length(output_j@ranges)!=0){
+        cat(seq.file[i],'\t从第',t,'位碱基开始正向读取','\n')
+        #print(rj[x,])
+        r<-fasta[1,]
+        r<-r[-1,]
+        site<-data.frame(output_j@ranges[1])
+        start<-site$start
+        end<-site$end
+        r[1,3]<-rj[x,3]
+        r[1,1]<-seq.file[i]
+        r[1,2]<-as.character(get(aa))
+        r[1,4]<-as.character(dna_seq)
+        fasta<-rbind(fasta,r)
+        #print(get(aa)[1:end])
+        cat('##############\n')
+      }}
+    
+    for (x in 1:nrow(rj)) {
+      sj<-rj[x,7]
+      output_j<-matchPattern(sj,get(aa_re),max.mismatch=1,with.indels=T)
+      ##max.mismatch=1参数控制错配数目多少，可以调整为2，数值越高结果越多与模板差异越大
+      
+      if(length(output_j@ranges)!=0){
+        cat(seq.file[i],'\t从第',t,'位碱基开始反向读取','\n')
+        #print(rj[x,])
+        r<-fasta[1,]
+        r<-r[-1,]
+        site<-data.frame(output_j@ranges[1])
+        start<-site$start
+        end<-site$end
+        r[1,3]<-rj[x,3]
+        r[1,1]<-seq.file[i]
+        r[1,2]<-as.character(get(aa_re))
+        r[1,4]<-as.character(dnare_seq)
+        fasta<-rbind(fasta,r)
+        #print(get(aa_re)[1:end])
+        cat('##############\n')
+      }} }
+}
+
+##判断轻重链
+for (i in 1:nrow(fasta)){
+  if(grepl("H",fasta[i,3])){
+    fasta[i,3]<-'H'
+  }
+  if(grepl("K|L",fasta[i,3])){
+    fasta[i,3]<-'L'}
+  
+ # if(grepl("\\*",fasta[i,2])){
+  #  a<-as.numeric(str_locate(fasta[i,2],"\\*")[,2])
+   # aa<-AAString(fasta[i,2])
+    #a1<-a+1
+    #if(a<150){
+     # fasta[i,2]<-as.character(aa[1:a])}
+      #}
+  }
+
+####写文件
+fasta_all<-unique(fasta)
+fasta_all$ID<-str_split_fixed(fasta_all$ID,'.seq',n=3)[,1]
+
+write.csv(fasta_all,file='output_all.csv',row.names=F)#导出csv格式文件，file=''内的参数含义是文件名，可以自定义
+
+library(seqinr)
+seq_all<-as.list(fasta_all$sequence)
+name_all<-as.list(fasta_all$ID)
+write.fasta(seq_all, names=name_all, file.out='output_all.fasta', open='w', nbchar=30)#导出fasta格式文件，file=''内的参数含义是文件名，可以自定义
+detach("package:seqinr", unload = TRUE)
+
+##如果要区分轻重链信息，可选择运行
+#轻
+fasta_l<-fasta_all[grep('L',fasta_all$type),]
+write.csv(fasta_l,file='output_L.csv',row.names=F)#轻链csv格式
+
+library(seqinr)
+seq_l<-as.list(fasta_l$sequence)
+name_l<-as.list(fasta_l$ID)
+write.fasta(seq_l, names=name_l, file.out='output_L.fasta', open='w', nbchar=30)#轻链fasta格式
+
+#重
+fasta_h<-fasta_all[grep('H',fasta_all$type),]
+write.csv(fasta_h,file='output_H.csv',row.names=F)#重链csv格式
+
+seq_h<-as.list(fasta_h$sequence)
+name_h<-as.list(fasta_h$ID)
+write.fasta(seq_h, names=name_h, file.out='output_H.fasta', open='w', nbchar=30)#重链fasta格式
+detach("package:seqinr", unload = TRUE)
