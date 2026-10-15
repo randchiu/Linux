@@ -28,6 +28,20 @@ sudo apt install nvidia-driver-<version> # 安装标注有recommended的版本
 sudo reboot
 ```
 ---
+# cuda卸载
+1. 通过 APT 包管理器卸载（适用于 .deb 或网络源安装）
+```
+sudo apt-get --purge remove "*cuda*" "*cublas*" "*cufft*" "*cufftw*" "*curand*" "*cusolver*" "*cusparse*" "*npp*" "*nvjpeg*" "nsight*"
+sudo apt-get autoremove
+sudo apt-get autoclean
+```
+2. 检查并清除残留包
+```
+sudo dpkg -l | grep cuda
+sudo dpkg -P <package_name>
+```
+• 检查并清理 ~/.bashrc 或 /etc/profile 中配置的 PATH 与 LD_LIBRARY_PATH 环境变量。
+• 运行 nvcc -V 验证是否已完全清除。
 # 常用命令
 - `lspci | grep -i nvidia` 查看当前显卡信息
 - `lsmod | grep nvidia` 用于检查 NVIDIA 显卡驱动内核模块是否已加载的命令。如果输出包含 nvidia、nvidia_modeset、nvidia_uvm 等内容，说明驱动已加载并运行；如果输出为空，则表示驱动未安装或未加载
