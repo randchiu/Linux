@@ -28,7 +28,7 @@ source ~/.bashrc
 nvcc --version
 ```
 
-## 安装GCC与G++（安装前先查看版本，系统一般默认安装好）
+# 安装GCC与G++（安装前先查看版本，系统一般默认安装好）
 ```
 sudo apt install gcc
 gcc --version
@@ -36,45 +36,11 @@ gcc --version
 sudo apt install g++
 g++ --version
 ```
-## 安装cmake
+# 安装cmake
 **不用追求最新版本，可直接运行`sudo apt install cmake`，但需先确认安装的Gromacs版本，不同版本对cmake所需最低版本支持不同**
-
-（**未验证**）官网https://cmake.org/download/ 下载相应版本源码进行编译安装，解压并进入文件夹，执行`./bootstrap`以及后续步骤
 ```
-tar -zxvf cmake-3.29.6.tar.gz
-cd cmake-3.29.6
-```
-```
-./bootstrap
-make 
-sudo make install
-```
-若在执行`./bootstrap`出现
-CMake Error at Utilities/cmcurl/CMakeLists.txt:772 (message):
-  Could not find OpenSSL.  Install an OpenSSL development package or
-  configure CMake with -DCMAKE_USE_OPENSSL=OFF to build without OpenSSL.
-  是因为缺少ssl库，执行以下命令解决
-```
-sudo apt-get install libssl-dev
-```
-# 安装Open MPI
-**单工作站可以不用装**
-进入官网https://www.open-mpi.org/software/ompi/v5.0/ 下载相应版本进行编译安装，解压并进入文件夹，执行`./configure`，并指定安装位置`--prefix=/home/username/software/openmpi`
-```
-tar -xvzf openmpi-5.0.1.tar.gz
-cd openmpi-5.0.1
-```
-```
-./configure --prefix=/home/username/software/openmpi 
-make
-sudo make install
-echo "export PATH=/home/username/software/openmpi/bin:$PATH" >> ~/.bashrc
-echo "export LD_LIBRARY_PATH=/home/username/software/openmpi/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
-source ~/.bashrc
-```
-```
-mpirun --version
-ompi_info
+sudo apt install cmake
+cmake --version
 ```
 # 安装FFTW
 进入官网https://fftw.org/download.html 下载相应版本进行编译安装，解压并进入文件夹，执行`./configure`，并指定安装位置`--prefix=/home/username/software/fftw-3310`
@@ -104,11 +70,8 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/home/hp/software/gmx24.2 \
   -DCMAKE_PREFIX_PATH=/home/hp/software/fftw3310 \
   -DGMX_GPU=CUDA \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12.8 \
-  -DGMX_MPI=ON \
   -DREGRESSIONTEST_DOWNLOAD=ON \
-  -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.8/bin/nvcc \
-  -DCMAKE_C_COMPILER=/home/hp/software/openmpi/bin/mpicc \
-  -DCMAKE_CXX_COMPILER=/home/hp/software/openmpi/bin/mpic++
+  -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.8/bin/nvcc
 ```
 ```
 make -j $(nproc)
@@ -121,6 +84,62 @@ echo "source /home/hp/software/gmx24.2/bin/GMXRC" >> ~/.bashrc
 source ~/.bashrc
 ```
 
+# 以下为废弃的步骤
+## 安装Open MPI
+**单工作站可以不用装**
+进入官网https://www.open-mpi.org/software/ompi/v5.0/ 下载相应版本进行编译安装，解压并进入文件夹，执行`./configure`，并指定安装位置`--prefix=/home/username/software/openmpi`
+```
+tar -xvzf openmpi-5.0.1.tar.gz
+cd openmpi-5.0.1
+```
+```
+./configure --prefix=/home/username/software/openmpi 
+make
+sudo make install
+echo "export PATH=/home/username/software/openmpi/bin:$PATH" >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=/home/username/software/openmpi/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
+source ~/.bashrc
+```
+```
+mpirun --version
+ompi_info
+```
+## 安装cmake
+**不用追求最新版本，可直接运行`sudo apt install cmake`，但需先确认安装的Gromacs版本，不同版本对cmake所需最低版本支持不同**
+
+（**未验证**）官网https://cmake.org/download/ 下载相应版本源码进行编译安装，解压并进入文件夹，执行`./bootstrap`以及后续步骤
+```
+tar -zxvf cmake-3.29.6.tar.gz
+cd cmake-3.29.6
+```
+```
+./bootstrap
+make 
+sudo make install
+```
+若在执行`./bootstrap`出现
+CMake Error at Utilities/cmcurl/CMakeLists.txt:772 (message):
+  Could not find OpenSSL.  Install an OpenSSL development package or
+  configure CMake with -DCMAKE_USE_OPENSSL=OFF to build without OpenSSL.
+  是因为缺少ssl库，执行以下命令解决
+```
+sudo apt-get install libssl-dev
+```
+## 安装gromacs
+2. 执行cmake，并安装，下面参数根据需要自行删减，如没有安装openmpi，就删掉相应参数
+```
+cmake .. -DCMAKE_INSTALL_PREFIX=/home/hp/software/gmx24.2 \
+  -DCMAKE_PREFIX_PATH=/home/hp/software/fftw3310 \
+  -DGMX_GPU=CUDA \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12.8 \
+  -DGMX_MPI=ON \
+  -DREGRESSIONTEST_DOWNLOAD=ON \
+  -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.8/bin/nvcc \
+  -DCMAKE_C_COMPILER=/home/hp/software/openmpi/bin/mpicc \
+  -DCMAKE_CXX_COMPILER=/home/hp/software/openmpi/bin/mpic++
+```
+
+## 注意（正常情况下不会出现）
 
 若输入`gmx --version`无效，可输入`gmx_mpi --version`,也可将`gmx_mpi`链接到`gmx`
 ```
