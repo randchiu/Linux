@@ -6,10 +6,18 @@ mpirun --version
 cmake --version
 gcc --version
 nvcc --version
-fftw-wisdom --version           #It can be installed by Gromacs itself
 nvidia-smi                      # check nvidia driver and cuda
 ```
 # 安装NVIDIA驱动
+1. 通过apt库安装推荐的nvidia driver
+```
+ubuntu-drivers devices # 列出支持的驱动版本
+sudo apt install nvidia-driver-<version> # 安装标注有recommended的版本
+```
+2. 重启，重启后输入`nvidia-smi`就可以正常使用了。
+```
+sudo reboot
+```
 
 # 安装CUDA
 1. 在安装nvidia驱动后，输入'nvidia-smi'确定驱动最高支持的CUDA版本，百度搜索相应版本并按照官网提示进行安装，可安装低于支持的最高版本。（推荐使用deb(network)，WSL子系统也同样适用）
@@ -29,7 +37,7 @@ sudo apt install g++
 g++ --version
 ```
 ## 安装cmake
-**不用追求最新版本，可直接运行`sudo apt install cmake`**
+**不用追求最新版本，可直接运行`sudo apt install cmake`，但需先确认安装的Gromacs版本，不同版本对cmake所需最低版本支持不同**
 
 （**未验证**）官网https://cmake.org/download/ 下载相应版本源码进行编译安装，解压并进入文件夹，执行`./bootstrap`以及后续步骤
 ```
@@ -50,6 +58,7 @@ CMake Error at Utilities/cmcurl/CMakeLists.txt:772 (message):
 sudo apt-get install libssl-dev
 ```
 # 安装Open MPI
+**单工作站可以不用装**
 进入官网https://www.open-mpi.org/software/ompi/v5.0/ 下载相应版本进行编译安装，解压并进入文件夹，执行`./configure`，并指定安装位置`--prefix=/home/username/software/openmpi`
 ```
 tar -xvzf openmpi-5.0.1.tar.gz
@@ -59,8 +68,8 @@ cd openmpi-5.0.1
 ./configure --prefix=/home/username/software/openmpi 
 make
 sudo make install
-echo 'export PATH=/home/username/software/openmpi/bin:$PATH' >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=/home/username/software/openmpi/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+echo "export PATH=/home/username/software/openmpi/bin:$PATH" >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=/home/username/software/openmpi/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
 ```
 ```
@@ -74,7 +83,7 @@ tar -xvf fftw-3.3.10.tar.gz
 cd fftw-3.3.10
 ```
 ```
-./configure --enable-float --enable-sse2 --enable-avx2 --enable-shared --prefix=/home/username/software/fftw-3310
+./configure --enable-float --enable-sse2 --enable-avx2 --enable-shared --enable-threads --prefix=/home/username/software/fftw-3310
 make 
 sudo make install
 echo "export LD_LIBRARY_PATH=/home/username/software/fftw-3310/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc  # 如果安装到了非标准路径，更新环境变量，将 FFTW 的库路径添加到 LD_LIBRARY_PATH
@@ -82,13 +91,14 @@ source ~/.bashrc
 ```
 
 # 安装Gromacs
-官网下载对应版本，安装到/home/hp/software/gmx24.2路径
+1. 官网下载对应版本，并解压，以下以安装到/home/hp/software/gmx24.2路径为例
 ```
 tar -xvzf gromacs-2024.2.tar.gz
 cd gromacs-2024.2/
 mkdir build
 cd build
 ```
+2. 执行cmake，并安装，下面参数根据需要自行删减，如没有安装openmpi，就删掉相应参数
 ```
 cmake .. -DCMAKE_INSTALL_PREFIX=/home/hp/software/gmx24.2 \
   -DCMAKE_PREFIX_PATH=/home/hp/software/fftw3310 \
@@ -101,15 +111,16 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/home/hp/software/gmx24.2 \
   -DCMAKE_CXX_COMPILER=/home/hp/software/openmpi/bin/mpic++
 ```
 ```
-make
+make -j $(nproc)
 make check
 sudo make install
 ```
-环境变量添加（以实际安装目录为准），`vim ~/.bashrc`添加以下两行，并`source ~/.bashrc`：
+3. 环境变量设置（以实际安装目录为准）
+```
+echo "source /home/hp/software/gmx24.2/bin/GMXRC" >> ~/.bashrc
+source ~/.bashrc
+```
 
-export PATH=/home/hp/software/gmx24.2/bin:$PATH
-
-source /home/hp/software/gmx24.2/bin/GMXRC
 
 若输入`gmx --version`无效，可输入`gmx_mpi --version`,也可将`gmx_mpi`链接到`gmx`
 ```
